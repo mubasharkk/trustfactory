@@ -27,18 +27,27 @@ defineProps({
                 <div class="flex items-center space-x-4">
                     <!-- Cart Button -->
                     <Link
+                        v-if="auth?.user"
                         :href="route('shop')"
                         class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
                     >
                         <FontAwesomeIcon icon="shopping-cart" class="w-5 h-5" />
                         <span class="ml-2">Cart</span>
                         <span
-                            v-if="auth?.user"
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
                         >
                             0
                         </span>
                     </Link>
+                    <button
+                        v-else
+                        type="button"
+                        disabled
+                        class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-400 bg-white border border-gray-300 rounded-md cursor-not-allowed opacity-60"
+                    >
+                        <FontAwesomeIcon icon="shopping-cart" class="w-5 h-5" />
+                        <span class="ml-2">Cart</span>
+                    </button>
 
                     <!-- Auth Buttons -->
                     <template v-if="!auth?.user">

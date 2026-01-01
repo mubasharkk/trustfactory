@@ -86,6 +86,7 @@ const closeModal = () => {
         <ProductModal
             :show="showModal"
             :product="selectedProduct"
+            :auth="auth"
             @close="closeModal"
         />
     </div>

@@ -1,4 +1,5 @@
 <script setup>
+import { Link } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -12,12 +13,20 @@ const props = defineProps({
         type: Object,
         default: null,
     },
+    auth: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const emit = defineEmits(['close']);
 
 const close = () => {
     emit('close');
+};
+
+const isLoggedIn = () => {
+    return !!props.auth?.user;
 };
 </script>
 
@@ -121,10 +130,37 @@ const close = () => {
                         </p>
                     </div>
 
+                    <!-- Login Message (if not logged in) -->
+                    <div
+                        v-if="!isLoggedIn()"
+                        class="pt-4 border-t border-gray-200"
+                    >
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+                            <p class="text-sm text-yellow-800">
+                                <strong>Please login or register</strong> to add items to your cart.
+                            </p>
+                            <div class="mt-3 flex space-x-3">
+                                <Link
+                                    :href="route('login')"
+                                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                                >
+                                    Login
+                                </Link>
+                                <span class="text-gray-300">|</span>
+                                <Link
+                                    :href="route('register')"
+                                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                                >
+                                    Register
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Action Buttons -->
                     <div class="pt-4 flex space-x-4">
                         <PrimaryButton
-                            :disabled="product.stock_quantity === 0"
+                            :disabled="!isLoggedIn() || product.stock_quantity === 0"
                             class="flex-1"
                         >
                             Add to Cart
