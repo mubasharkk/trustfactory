@@ -1,29 +1,32 @@
-Project: Simple E-commerce Shopping Cart
+# Project: Simple E-commerce Shopping Cart
 
 Create a project for a simple e-commerce shopping cart system. Users should be able to browse products, add them to a cart, update quantities, and remove items. Each product should have a name, price, and stock_quantity.
 
-Please use any of Laravel’s starter kits - Livewire, React, or Vue—whichever you’re most comfortable with. (https://laravel.com/starter-kits)
+Please use any of Laravel's starter kits - Livewire, React, or Vue—whichever you're most comfortable with. ([Laravel Starter Kits](https://laravel.com/starter-kits))
 
-Each shopping cart must be associated with the authenticated user (User model).
-When a user adds products to their cart, updates quantities, or removes items, these actions should be stored and retrieved based on the currently authenticated user (not via session or local storage).
-Make sure to use Laravel’s built-in authentication from the starter kit.
+Each shopping cart must be associated with the authenticated user (User model). When a user adds products to their cart, updates quantities, or removes items, these actions should be stored and retrieved based on the currently authenticated user (not via session or local storage).
 
-Keep it simple and follow laravel best practices and guidelines.
+Make sure to use Laravel's built-in authentication from the starter kit.
 
-Tech Stack:
+Keep it simple and follow Laravel best practices and guidelines.
 
-Backend: Laravel
+## Tech Stack
 
-Frontend: React, Vue or Livewire
+- **Backend:** Laravel
+- **Frontend:** React, Vue or Livewire
+- **Styling:** Tailwind CSS
+- **Version Control:** Git/GitHub
 
-Styling: Tailwind CSS
+## Key Requirements
 
-Version Control: Git/GitHub
+### Low Stock Notification
 
-Key Requirements:
+When a product's stock is running low, a Laravel Job/Queue should be triggered to send an email to a dummy admin user.
 
-Low Stock Notification: When a product's stock is running low, a Laravel Job/Queue should be triggered to send an email to a dummy admin user.
+### Daily Sales Report
 
-Daily Sales Report: Implement a scheduled job (cron) that runs every evening and sends a report of all products sold that day to the email of the dummy admin user.
+Implement a scheduled job (cron) that runs every evening and sends a report of all products sold that day to the email of the dummy admin user.
 
-Submission: Please host the code on GitHub and add @dylanmichaelryan as a collaborator to the repository.
+## Submission
+
+Please host the code on GitHub and add `@dylanmichaelryan` as a collaborator to the repository.
