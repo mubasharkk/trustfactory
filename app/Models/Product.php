@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Product extends Model
+{
+    use HasTimestamps;
+
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'image',
+        'price',
+        'stock_quantity',
+        'sku',
+        'category_id',
+    ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+}
