@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -21,12 +22,61 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+const quantity = ref(1);
+
+// Reset quantity when product changes or modal opens
+watch(
+    () => props.product,
+    (newProduct) => {
+        if (newProduct) {
+            quantity.value = 1;
+        }
+    },
+    { immediate: true }
+);
+
+watch(
+    () => props.show,
+    (isOpen) => {
+        if (isOpen && props.product) {
+            quantity.value = 1;
+        }
+    }
+);
+
 const close = () => {
     emit('close');
 };
 
 const isLoggedIn = () => {
     return !!props.auth?.user;
+};
+
+const maxQuantity = () => {
+    return props.product?.stock_quantity || 0;
+};
+
+const incrementQuantity = () => {
+    if (quantity.value < maxQuantity()) {
+        quantity.value++;
+    }
+};
+
+const decrementQuantity = () => {
+    if (quantity.value > 1) {
+        quantity.value--;
+    }
+};
+
+const handleQuantityInput = (event) => {
+    const value = parseInt(event.target.value) || 1;
+    if (value < 1) {
+        quantity.value = 1;
+    } else if (value > maxQuantity()) {
+        quantity.value = maxQuantity();
+    } else {
+        quantity.value = value;
+    }
 };
 </script>
 
@@ -130,6 +180,71 @@ const isLoggedIn = () => {
                         </p>
                     </div>
 
+                    <!-- Quantity Selection -->
+                    <div
+                        v-if="isLoggedIn() && product.stock_quantity > 0"
+                        class="pt-4 border-t border-gray-200"
+                    >
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                            Quantity
+                        </label>
+                        <div class="flex items-center space-x-3">
+                            <button
+                                type="button"
+                                @click="decrementQuantity"
+                                :disabled="quantity <= 1"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition"
+                            >
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M20 12H4"
+                                    />
+                                </svg>
+                            </button>
+                            <input
+                                type="number"
+                                :value="quantity"
+                                @input="handleQuantityInput"
+                                :min="1"
+                                :max="maxQuantity()"
+                                class="w-20 text-center rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3 border"
+                            />
+                            <button
+                                type="button"
+                                @click="incrementQuantity"
+                                :disabled="quantity >= maxQuantity()"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition"
+                            >
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 4v16m8-8H4"
+                                    />
+                                </svg>
+                            </button>
+                            <span class="text-sm text-gray-500">
+                                (Max: {{ maxQuantity() }})
+                            </span>
+                        </div>
+                    </div>
+
                     <!-- Login Message (if not logged in) -->
                     <div
                         v-if="!isLoggedIn()"
@@ -163,7 +278,7 @@ const isLoggedIn = () => {
                             :disabled="!isLoggedIn() || product.stock_quantity === 0"
                             class="flex-1"
                         >
-                            Add to Cart
+                            Add to Cart ({{ quantity }})
                         </PrimaryButton>
                         <SecondaryButton @click="close">
                             Close
