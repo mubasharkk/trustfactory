@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCartItemRequest;
 use App\Models\Product;
 use App\Models\UserCartItem;
 use Illuminate\Http\Request;
@@ -13,14 +14,9 @@ class CartController extends Controller
     /**
      * Add item to cart.
      */
-    public function store(Request $request)
+    public function store(StoreCartItemRequest $request)
     {
-        $request->validate([
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'quantity' => ['required', 'integer', 'min:1'],
-        ]);
-
-        $user = Auth::user();
+        $user = $request->user();
         $product = Product::findOrFail($request->product_id);
 
         // Check if product is in stock
@@ -38,7 +34,7 @@ class CartController extends Controller
         if ($cartItem) {
             // Update quantity if item exists
             $newQuantity = $cartItem->quantity + $request->quantity;
-            
+
             // Check if new quantity exceeds stock
             if ($newQuantity > $product->stock_quantity) {
                 throw ValidationException::withMessages([
