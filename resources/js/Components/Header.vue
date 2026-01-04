@@ -1,15 +1,19 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 
-defineProps({
+const props = defineProps({
     auth: {
         type: Object,
         default: () => ({}),
     },
 });
+
+const page = usePage();
+const cartCount = computed(() => page.props.cart_count || 0);
 </script>
 
 <template>
@@ -34,9 +38,10 @@ defineProps({
                         <FontAwesomeIcon icon="shopping-cart" class="w-5 h-5" />
                         <span class="ml-2">Cart</span>
                         <span
+                            v-if="cartCount > 0"
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
                         >
-                            0
+                            {{ cartCount }}
                         </span>
                     </Link>
                     <button

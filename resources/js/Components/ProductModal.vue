@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -76,6 +77,41 @@ const handleQuantityInput = (event) => {
         quantity.value = maxQuantity();
     } else {
         quantity.value = value;
+    }
+};
+
+const addingToCart = ref(false);
+const addToCartError = ref(null);
+
+const addToCart = async () => {
+    if (!isLoggedIn() || !props.product) {
+        return;
+    }
+
+    addingToCart.value = true;
+    addToCartError.value = null;
+
+    try {
+        const response = await axios.post(route('cart.store'), {
+            product_id: props.product.id,
+            quantity: quantity.value,
+        });
+
+        // Update cart count in Inertia props by reloading page data
+        router.reload({ only: ['cart_count'] });
+
+        // Show success message and close modal after a short delay
+        setTimeout(() => {
+            close();
+        }, 500);
+    } catch (error) {
+        if (error.response?.data?.errors) {
+            addToCartError.value = Object.values(error.response.data.errors).flat().join(', ');
+        } else {
+            addToCartError.value = error.response?.data?.message || 'Failed to add item to cart. Please try again.';
+        }
+    } finally {
+        addingToCart.value = false;
     }
 };
 </script>
@@ -272,13 +308,27 @@ const handleQuantityInput = (event) => {
                         </div>
                     </div>
 
+                    <!-- Error Message -->
+                    <div
+                        v-if="addToCartError"
+                        class="pt-4 border-t border-gray-200"
+                    >
+                        <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+                            <p class="text-sm text-red-800">
+                                {{ addToCartError }}
+                            </p>
+                        </div>
+                    </div>
+
                     <!-- Action Buttons -->
                     <div class="pt-4 flex space-x-4">
                         <PrimaryButton
-                            :disabled="!isLoggedIn() || product.stock_quantity === 0"
+                            :disabled="!isLoggedIn() || product.stock_quantity === 0 || addingToCart"
                             class="flex-1"
+                            @click="addToCart"
                         >
-                            Add to Cart ({{ quantity }})
+                            <span v-if="addingToCart">Adding...</span>
+                            <span v-else>Add to Cart ({{ quantity }})</span>
                         </PrimaryButton>
                         <SecondaryButton @click="close">
                             Close
