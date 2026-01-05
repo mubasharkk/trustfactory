@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\Product;
+use App\Actions\Product\GetCategoriesAction;
+use App\Actions\Product\GetProductsAction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,22 +14,12 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with('category');
-
-        // Filter by category if provided
-        if ($request->has('category') && $request->category) {
-            $query->where('category_id', $request->category);
-        }
-
-        $products = $query->orderBy('created_at', 'desc')->get();
-
-        // Get all categories for the filter component
-        $categories = Category::orderBy('name')->get();
+        $categoryId = $request->get('category');
 
         return Inertia::render('Shop', [
-            'products' => $products,
-            'categories' => $categories,
-            'selectedCategory' => $request->category,
+            'products' => GetProductsAction::run($categoryId),
+            'categories' => GetCategoriesAction::run(),
+            'selectedCategory' => $categoryId,
         ]);
     }
 }
