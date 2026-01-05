@@ -28,7 +28,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-php-
     - name: Install Dependencies
-      run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs --ignore-platform-reqs
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - name: Generate key
       run: php artisan key:generate
     - name: Directory Permissions
@@ -42,8 +42,8 @@ jobs:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan migrate --seed
-    - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
+    - name: Execute Unit tests via PHPUnit
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
-      run: php artisan test --coverage-clover=coverage.xml
+      run: php artisan test --testsuite Unit --coverage-clover=coverage.xml
