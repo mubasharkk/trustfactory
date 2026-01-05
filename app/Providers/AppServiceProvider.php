@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Product;
 use App\Models\UserCartItem;
+use App\Observers\ProductObserver;
 use App\Policies\CartItemPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
@@ -38,5 +40,8 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Route::bind('cartItem', function ($value) {
             return \App\Models\UserCartItem::findOrFail($value);
         });
+
+        // Register Product Observer
+        Product::observe(ProductObserver::class);
     }
 }
