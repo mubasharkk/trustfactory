@@ -9,6 +9,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    readonly: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const emit = defineEmits(['item-updated', 'item-removed']);
@@ -160,6 +164,7 @@ const itemTotal = () => {
                 <div class="flex items-center gap-2">
                     <label class="text-sm text-gray-700">Qty:</label>
                     <input
+                        v-if="!readonly"
                         type="number"
                         :value="quantity"
                         @input="handleQuantityChange($event.target.value)"
@@ -168,6 +173,12 @@ const itemTotal = () => {
                         :disabled="updating"
                         class="w-20 text-center rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-1 px-2 border disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
+                    <span
+                        v-else
+                        class="text-sm font-semibold text-gray-800"
+                    >
+                        {{ quantity }}
+                    </span>
                 </div>
 
                 <div class="text-right">
@@ -179,7 +190,7 @@ const itemTotal = () => {
 
                 <!-- Error Message -->
                 <p
-                    v-if="error"
+                    v-if="error && !readonly"
                     class="text-xs text-red-600"
                 >
                     {{ error }}
@@ -187,6 +198,7 @@ const itemTotal = () => {
 
                 <!-- Remove Button -->
                 <button
+                    v-if="!readonly"
                     @click="removeItem"
                     :disabled="updating"
                     class="text-sm text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition"

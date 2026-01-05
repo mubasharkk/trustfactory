@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import Header from '@/Components/Header.vue';
 import CartItemRow from '@/Components/CartItemRow.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import Modal from '@/Components/Modal.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 const props = defineProps({
     cartItems: {
@@ -25,6 +28,9 @@ const props = defineProps({
 });
 
 const cartItemsList = ref([...props.cartItems]);
+const showCheckoutModal = ref(false);
+const processingCheckout = ref(false);
+const checkoutError = ref(null);
 
 const handleItemUpdated = (updatedItem) => {
     const index = cartItemsList.value.findIndex(item => item.id === updatedItem.id);
@@ -42,6 +48,40 @@ const handleItemRemoved = (itemId) => {
 };
 
 const isEmpty = computed(() => cartItemsList.value.length === 0);
+
+const openCheckoutModal = () => {
+    showCheckoutModal.value = true;
+    checkoutError.value = null;
+};
+
+const closeCheckoutModal = () => {
+    showCheckoutModal.value = false;
+    checkoutError.value = null;
+};
+
+const proceedCheckout = async () => {
+    processingCheckout.value = true;
+    checkoutError.value = null;
+
+    try {
+        const response = await axios.post(route('checkout.store'));
+
+        // Reload page to update cart count and show empty cart
+        router.reload({
+            onSuccess: () => {
+                showCheckoutModal.value = false;
+            },
+        });
+    } catch (error) {
+        if (error.response?.data?.message) {
+            checkoutError.value = error.response.data.message;
+        } else {
+            checkoutError.value = 'Failed to process checkout. Please try again.';
+        }
+    } finally {
+        processingCheckout.value = false;
+    }
+};
 </script>
 
 <template>
@@ -110,6 +150,7 @@ const isEmpty = computed(() => cartItemsList.value.length === 0);
 
                             <PrimaryButton
                                 class="w-full"
+                                @click="openCheckoutModal"
                             >
                                 Proceed to Checkout
                             </PrimaryButton>
@@ -125,5 +166,52 @@ const isEmpty = computed(() => cartItemsList.value.length === 0);
                 </div>
             </div>
         </main>
+
+        <!-- Checkout Confirmation Modal -->
+        <Modal :show="showCheckoutModal" max-width="md" @close="closeCheckoutModal">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                    Confirm Checkout
+                </h2>
+
+                <div class="mb-6">
+                    <p class="text-gray-600 mb-4">
+                        Are you sure you want to proceed with checkout? This will:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-600 space-y-2 mb-4">
+                        <li>Create an order for {{ cartCount }} item(s)</li>
+                        <li>Total amount: <strong class="text-gray-800">${{ totalPrice.toFixed(2) }}</strong></li>
+                        <li>Clear your cart</li>
+                    </ul>
+                </div>
+
+                <!-- Error Message -->
+                <div
+                    v-if="checkoutError"
+                    class="mb-4 bg-red-50 border border-red-200 rounded-md p-4"
+                >
+                    <p class="text-sm text-red-800">
+                        {{ checkoutError }}
+                    </p>
+                </div>
+
+                <div class="flex space-x-4">
+                    <PrimaryButton
+                        @click="proceedCheckout"
+                        :disabled="processingCheckout"
+                        class="flex-1"
+                    >
+                        <span v-if="processingCheckout">Processing...</span>
+                        <span v-else>Confirm Checkout</span>
+                    </PrimaryButton>
+                    <SecondaryButton
+                        @click="closeCheckoutModal"
+                        :disabled="processingCheckout"
+                    >
+                        Cancel
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </div>
 </template>

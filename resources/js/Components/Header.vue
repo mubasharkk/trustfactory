@@ -101,6 +101,9 @@ const cartCount = computed(() => page.props.cart_count || 0);
                                 </template>
 
                                 <template #content>
+                                    <DropdownLink :href="route('orders.index')">
+                                        Orders
+                                    </DropdownLink>
                                     <DropdownLink :href="route('profile.edit')">
                                         Profile
                                     </DropdownLink>

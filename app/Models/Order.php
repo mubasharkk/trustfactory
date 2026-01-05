@@ -13,7 +13,11 @@ class Order extends Model
 
     protected $table = 'orders';
 
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
+        'id',
         'items',
         'user_id',
         'total_price',
@@ -24,6 +28,7 @@ class Order extends Model
 
     protected $casts = [
         'items' => 'array',
+        'total_price' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
