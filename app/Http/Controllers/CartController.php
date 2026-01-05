@@ -2,59 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Cart\AddToCartAction;
+use App\Actions\Cart\DeleteCartItemAction;
+use App\Actions\Cart\GetUserCartAction;
+use App\Actions\Cart\UpdateCartItemAction;
 use App\Http\Requests\StoreCartItemRequest;
 use App\Http\Requests\UpdateCartItemRequest;
-use App\Models\Product;
 use App\Models\UserCartItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class CartController extends Controller
 {
-
     /**
      * Add item to cart.
      */
     public function store(StoreCartItemRequest $request)
     {
-        $user = $request->user();
-        $product = Product::findOrFail($request->product_id);
-
-        // Check if product is in stock
-        if ($product->stock_quantity < $request->quantity) {
-            throw ValidationException::withMessages([
-                'quantity' => 'Insufficient stock. Only ' . $product->stock_quantity . ' items available.',
-            ]);
-        }
-
-        // Check if item already exists in cart
-        $cartItem = UserCartItem::where('user_id', $user->id)
-            ->where('product_id', $product->id)
-            ->first();
-
-        if ($cartItem) {
-            // Update quantity if item exists
-            $newQuantity = $cartItem->quantity + $request->quantity;
-
-            // Check if new quantity exceeds stock
-            if ($newQuantity > $product->stock_quantity) {
-                throw ValidationException::withMessages([
-                    'quantity' => 'Cannot add more items. Maximum available: ' . $product->stock_quantity . '. You already have ' . $cartItem->quantity . ' in your cart.',
-                ]);
-            }
-
-            $cartItem->quantity = $newQuantity;
-            $cartItem->save();
-        } else {
-            // Create new cart item
-            $cartItem = UserCartItem::create([
-                'user_id' => $user->id,
-                'product_id' => $product->id,
-                'quantity' => $request->quantity,
-            ]);
-        }
+        AddToCartAction::run(
+            $request->user()->id,
+            $request->product_id,
+            $request->quantity
+        );
 
         return response()->json([
             'message' => 'Item added to cart successfully',
@@ -66,9 +35,7 @@ class CartController extends Controller
      */
     public function index(Request $request)
     {
-        $cartItems = UserCartItem::with('product.category')
-            ->where('user_id', $request->user()->id)
-            ->get();
+        $cartItems = GetUserCartAction::run($request->user()->id);
 
         $totalPrice = $cartItems->sum(function ($item) {
             return $item->product->price * $item->quantity;
@@ -86,22 +53,9 @@ class CartController extends Controller
      */
     public function update(UpdateCartItemRequest $request, UserCartItem $cartItem)
     {
-        // Ensure the cart item belongs to the authenticated user
-        if ($cartItem->user_id !== $request->user()->id) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('update', $cartItem);
 
-        $product = $cartItem->product;
-
-        // Check if requested quantity exceeds stock
-        if ($request->quantity > $product->stock_quantity) {
-            throw ValidationException::withMessages([
-                'quantity' => 'Insufficient stock. Only ' . $product->stock_quantity . ' items available.',
-            ]);
-        }
-
-        $cartItem->quantity = $request->quantity;
-        $cartItem->save();
+        UpdateCartItemAction::run($cartItem, $request->quantity);
 
         return response()->json([
             'message' => 'Cart item updated successfully',
@@ -113,12 +67,9 @@ class CartController extends Controller
      */
     public function destroy(Request $request, UserCartItem $cartItem)
     {
-        // Ensure the cart item belongs to the authenticated user
-        if ($cartItem->user_id !== $request->user()->id) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('delete', $cartItem);
 
-        $cartItem->delete();
+        DeleteCartItemAction::run($cartItem);
 
         return response()->json([
             'message' => 'Item removed from cart successfully',
