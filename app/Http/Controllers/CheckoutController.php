@@ -14,16 +14,11 @@ class CheckoutController extends Controller
     public function store(Request $request)
     {
         try {
-            $order = CheckoutAction::run($request->user()->id);
+            CheckoutAction::run($request->user()->id);
 
-            return response()->json([
-                'message' => 'Order placed successfully',
-                'order' => $order,
-            ]);
+            return redirect()->route('orders.index')->with('success', 'Order placed successfully!');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 400);
+            return back()->withErrors(['checkout' => $e->getMessage()]);
         }
     }
 }

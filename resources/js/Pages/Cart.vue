@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import axios from 'axios';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import Header from '@/Components/Header.vue';
 import CartItemRow from '@/Components/CartItemRow.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -59,28 +58,29 @@ const closeCheckoutModal = () => {
     checkoutError.value = null;
 };
 
-const proceedCheckout = async () => {
+const checkoutForm = useForm({});
+
+const proceedCheckout = () => {
     processingCheckout.value = true;
     checkoutError.value = null;
 
-    try {
-        const response = await axios.post(route('checkout.store'));
-
-        // Reload page to update cart count and show empty cart
-        router.reload({
-            onSuccess: () => {
-                showCheckoutModal.value = false;
-            },
-        });
-    } catch (error) {
-        if (error.response?.data?.message) {
-            checkoutError.value = error.response.data.message;
-        } else {
-            checkoutError.value = 'Failed to process checkout. Please try again.';
-        }
-    } finally {
-        processingCheckout.value = false;
-    }
+    checkoutForm.post(route('checkout.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showCheckoutModal.value = false;
+            // Redirect is handled by backend
+        },
+        onError: (errors) => {
+            if (errors.checkout) {
+                checkoutError.value = errors.checkout;
+            } else {
+                checkoutError.value = 'Failed to process checkout. Please try again.';
+            }
+        },
+        onFinish: () => {
+            processingCheckout.value = false;
+        },
+    });
 };
 </script>
 

@@ -3,6 +3,7 @@
 namespace App\Actions\Order;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\UserCartItem;
 use Illuminate\Support\Facades\DB;
 use Lorisleiva\Actions\Concerns\AsAction;
@@ -27,6 +28,22 @@ class CheckoutAction
 
             if ($cartItems->isEmpty()) {
                 throw new \Exception('Cart is empty. Cannot proceed with checkout.');
+            }
+
+            // Validate stock availability and reduce stock quantities
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
+                
+                // Validate stock availability
+                if ($product->stock_quantity < $cartItem->quantity) {
+                    throw new \Exception(
+                        "Insufficient stock for {$product->name}. Available: {$product->stock_quantity}, Requested: {$cartItem->quantity}"
+                    );
+                }
+
+                // Reduce stock quantity
+                $product->stock_quantity -= $cartItem->quantity;
+                $product->save();
             }
 
             // Prepare order items
