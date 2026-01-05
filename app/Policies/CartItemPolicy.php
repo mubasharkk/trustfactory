@@ -12,7 +12,7 @@ class CartItemPolicy
      */
     public function update(User $user, UserCartItem $cartItem): bool
     {
-        return $user->id === $cartItem->user_id;
+        return (int) $user->id === (int) $cartItem->user_id;
     }
 
     /**
@@ -20,6 +20,6 @@ class CartItemPolicy
      */
     public function delete(User $user, UserCartItem $cartItem): bool
     {
-        return $user->id === $cartItem->user_id;
+        return (int) $user->id === (int) $cartItem->user_id;
     }
 }

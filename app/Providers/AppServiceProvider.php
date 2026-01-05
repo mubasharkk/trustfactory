@@ -36,6 +36,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
+        // Register policies
+        foreach ($this->policies as $model => $policy) {
+            Gate::policy($model, $policy);
+        }
+
         // Route model binding for cart items
         \Illuminate\Support\Facades\Route::bind('cartItem', function ($value) {
             return \App\Models\UserCartItem::findOrFail($value);
