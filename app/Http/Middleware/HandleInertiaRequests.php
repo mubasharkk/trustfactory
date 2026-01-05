@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Actions\Cart\GetCartCountAction;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -31,7 +32,7 @@ class HandleInertiaRequests extends Middleware
     {
         $cartCount = 0;
         if ($request->user()) {
-            $cartCount = \App\Models\UserCartItem::where('user_id', $request->user()->id)->sum('quantity');
+            $cartCount = GetCartCountAction::run($request->user()->id);
         }
 
         return [
