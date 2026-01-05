@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         //
     })
+    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
+        $kernel = app(\App\Console\Kernel::class);
+        $kernel->schedule($schedule);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
