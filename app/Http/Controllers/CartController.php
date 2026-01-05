@@ -3,14 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCartItemRequest;
+use App\Http\Requests\UpdateCartItemRequest;
 use App\Models\Product;
 use App\Models\UserCartItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class CartController extends Controller
 {
+
+    /**
+     * Get cart response data with cart count.
+     *
+     * @param int $userId
+     * @param array $response
+     * @return array
+     */
+    protected function cartResponse(Request $request, array $response): array
+    {
+        return array_merge($response, [
+            'cart_count' => UserCartItem::where('user_id', $request->user()->id)->sum('quantity'),
+        ]);
+    }
+
     /**
      * Add item to cart.
      */
@@ -53,25 +70,90 @@ class CartController extends Controller
             ]);
         }
 
-        // Get updated cart count
-        $cartCount = UserCartItem::where('user_id', $user->id)->sum('quantity');
+        return response()->json(
+            $this->cartResponse($request, [
+                'message' => 'Item added to cart successfully',
+            ])
+        );
+    }
 
-        return response()->json([
-            'message' => 'Item added to cart successfully',
-            'cart_count' => $cartCount,
-        ]);
+    /**
+     * Display the cart view.
+     */
+    public function index(Request $request)
+    {
+        $cartItems = UserCartItem::with('product.category')
+            ->where('user_id', $request->user()->id)
+            ->get();
+
+        $totalPrice = $cartItems->sum(function ($item) {
+            return $item->product->price * $item->quantity;
+        });
+
+        return Inertia::render(
+            'Cart',
+            $this->cartResponse($request, [
+                'cartItems' => $cartItems,
+                'totalPrice' => $totalPrice,
+            ])
+        );
+    }
+
+    /**
+     * Update cart item quantity.
+     */
+    public function update(UpdateCartItemRequest $request, UserCartItem $cartItem)
+    {
+        // Ensure the cart item belongs to the authenticated user
+        if ($cartItem->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $product = $cartItem->product;
+
+        // Check if requested quantity exceeds stock
+        if ($request->quantity > $product->stock_quantity) {
+            throw ValidationException::withMessages([
+                'quantity' => 'Insufficient stock. Only ' . $product->stock_quantity . ' items available.',
+            ]);
+        }
+
+        $cartItem->quantity = $request->quantity;
+        $cartItem->save();
+
+        return response()->json(
+            $this->cartResponse($request, [
+                'message' => 'Cart item updated successfully',
+            ])
+        );
+    }
+
+    /**
+     * Remove item from cart.
+     */
+    public function destroy(Request $request, UserCartItem $cartItem)
+    {
+        // Ensure the cart item belongs to the authenticated user
+        if ($cartItem->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $cartItem->delete();
+
+        return response()->json(
+            $this->cartResponse($request, [
+                'message' => 'Item removed from cart successfully',
+            ])
+        );
     }
 
     /**
      * Get cart count for the authenticated user.
      */
-    public function count()
+    public function count(Request $request)
     {
-        $user = Auth::user();
-        $cartCount = UserCartItem::where('user_id', $user->id)->sum('quantity');
-
-        return response()->json([
-            'cart_count' => $cartCount,
-        ]);
+        return response()->json(
+            $this->cartResponse($request, [])
+        );
     }
 }
