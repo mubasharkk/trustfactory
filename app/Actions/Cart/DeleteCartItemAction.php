@@ -17,6 +17,11 @@ class DeleteCartItemAction
      */
     public function handle(UserCartItem $cartItem): bool
     {
+        // Check if the cart item exists in the database
+        if (!$cartItem->exists) {
+            return false;
+        }
+
         return $cartItem->delete();
     }
 }
