@@ -21,7 +21,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart', [\App\Http\Controllers\CartController::class, 'store'])->name('cart.store');
     Route::patch('/cart/{cartItem}', [\App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{cartItem}', [\App\Http\Controllers\CartController::class, 'destroy'])->name('cart.destroy');
-    Route::get('/cart/count', [\App\Http\Controllers\CartController::class, 'count'])->name('cart.count');
 });
 
 require __DIR__.'/auth.php';

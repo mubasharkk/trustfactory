@@ -15,20 +15,6 @@ class CartController extends Controller
 {
 
     /**
-     * Get cart response data with cart count.
-     *
-     * @param int $userId
-     * @param array $response
-     * @return array
-     */
-    protected function cartResponse(Request $request, array $response): array
-    {
-        return array_merge($response, [
-            'cart_count' => UserCartItem::where('user_id', $request->user()->id)->sum('quantity'),
-        ]);
-    }
-
-    /**
      * Add item to cart.
      */
     public function store(StoreCartItemRequest $request)
@@ -70,11 +56,9 @@ class CartController extends Controller
             ]);
         }
 
-        return response()->json(
-            $this->cartResponse($request, [
-                'message' => 'Item added to cart successfully',
-            ])
-        );
+        return response()->json([
+            'message' => 'Item added to cart successfully',
+        ]);
     }
 
     /**
@@ -90,13 +74,11 @@ class CartController extends Controller
             return $item->product->price * $item->quantity;
         });
 
-        return Inertia::render(
-            'Cart',
-            $this->cartResponse($request, [
-                'cartItems' => $cartItems,
-                'totalPrice' => $totalPrice,
-            ])
-        );
+        return Inertia::render('Cart', [
+            'cartItems' => $cartItems,
+            'cartCount' => $cartItems->sum('quantity'),
+            'totalPrice' => $totalPrice,
+        ]);
     }
 
     /**
@@ -121,11 +103,9 @@ class CartController extends Controller
         $cartItem->quantity = $request->quantity;
         $cartItem->save();
 
-        return response()->json(
-            $this->cartResponse($request, [
-                'message' => 'Cart item updated successfully',
-            ])
-        );
+        return response()->json([
+            'message' => 'Cart item updated successfully',
+        ]);
     }
 
     /**
@@ -140,20 +120,8 @@ class CartController extends Controller
 
         $cartItem->delete();
 
-        return response()->json(
-            $this->cartResponse($request, [
-                'message' => 'Item removed from cart successfully',
-            ])
-        );
-    }
-
-    /**
-     * Get cart count for the authenticated user.
-     */
-    public function count(Request $request)
-    {
-        return response()->json(
-            $this->cartResponse($request, [])
-        );
+        return response()->json([
+            'message' => 'Item removed from cart successfully',
+        ]);
     }
 }
