@@ -37,10 +37,12 @@ A full-stack e-commerce application built with Laravel and Inertia.js, featuring
    cp .env.example .env
    ```
 
-   Update the following port configurations in `.env` according to your local preferences and configuration:
+   Update the following configurations in `.env` according to your local preferences:
     - `APP_PORT` - Application port (default: 80)
     - `FORWARD_DB_PORT` - Database port forwarding (default: 3306)
-    - `FORWARD_REDIS_PORT` - Redis port forwarding (default: 6379)
+    - `DAILY_SALES_REPORT_TIME` - Time for daily sales report job to run, format HH:MM 24-hour (default: 20:00)
+    - `PRODUCT_LOW_STOCK_THRESHOLD` - Minimum stock quantity before low stock notification is triggered (default: 10)
+    - `PRODUCT_ADMIN_EMAIL` - Email address to receive low stock notifications (default: admin@example.com)
 
 
 2. **Clone the repository**

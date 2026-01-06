@@ -24,4 +24,16 @@ return [
     */
 
     'admin_email' => env('PRODUCT_ADMIN_EMAIL', 'admin@example.com'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Daily Sales Report Time
+    |--------------------------------------------------------------------------
+    |
+    | The time when the daily sales report job should run.
+    | Format: HH:MM (24-hour format, e.g., '20:00' for 8:00 PM)
+    |
+    */
+
+    'daily_sales_report_time' => env('DAILY_SALES_REPORT_TIME', '20:00'),
 ];

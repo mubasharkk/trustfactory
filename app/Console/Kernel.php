@@ -13,8 +13,10 @@ class Kernel extends ConsoleKernel
      */
     public function schedule(Schedule $schedule): void
     {
-        // Run daily sales report every day at 8:00 PM
-        $schedule->job(new GenerateDailySalesReportJob)->dailyAt('20:00');
+        // Run daily sales report at configured time
+        $schedule->job(new GenerateDailySalesReportJob)->dailyAt(
+            config('trustfactory.daily_sales_report_time', '00:00')
+        );
     }
 
     /**
