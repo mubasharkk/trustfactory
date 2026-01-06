@@ -25,10 +25,10 @@ class ProductObserver
             $lowStockThreshold = config('trustfactory.low_stock_threshold');
             $originalStock = $product->getOriginal('stock_quantity');
             $currentStock = $product->stock_quantity;
-            
+
             // Only trigger notification if stock is now below threshold
             // and the previous stock was above threshold (to avoid duplicate notifications)
-            if ($currentStock <= $lowStockThreshold && $originalStock > $lowStockThreshold) {
+            if ($currentStock <= $lowStockThreshold) {
                 LowStockNotificationJob::dispatch($product);
             }
         }
@@ -40,7 +40,7 @@ class ProductObserver
     protected function checkLowStock(Product $product): void
     {
         $lowStockThreshold = config('trustfactory.low_stock_threshold');
-        
+
         if ($product->stock_quantity <= $lowStockThreshold) {
             LowStockNotificationJob::dispatch($product);
         }

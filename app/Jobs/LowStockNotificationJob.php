@@ -30,7 +30,7 @@ class LowStockNotificationJob implements ShouldQueue
     public function handle(): void
     {
         $adminEmail = config('trustfactory.admin_email');
-        
+
         if (!$adminEmail) {
             \Log::warning('Admin email not configured for low stock notifications.');
             return;
