@@ -6,6 +6,19 @@
 
 A full-stack e-commerce application built with Laravel and Inertia.js, featuring product catalog management, shopping cart functionality, order processing, and automated inventory notifications. The application includes user authentication with email verification, real-time stock management, and comprehensive order tracking.
 
+## Development Approach
+
+This project follows a clean architecture pattern with clear separation of concerns:
+
+- **Laravel Actions**: Business logic is encapsulated in reusable Action classes, keeping controllers thin and focused on HTTP concerns
+- **Policy-Based Authorization**: Authorization logic is centralized in policies, ensuring consistent access control across the application
+- **Observer Pattern**: Product stock changes are monitored via observers, triggering automated notifications when thresholds are crossed
+- **Scheduled Jobs**: Background jobs handle time-sensitive tasks like daily sales reports, ensuring non-blocking execution
+- **Unit Testing**: Comprehensive unit tests focus on business logic (Actions and Policies) rather than HTTP layer, ensuring fast and reliable test execution
+- **Configuration-Driven**: Key application settings (stock thresholds, report times, admin emails) are configurable via environment variables for flexibility across environments
+
+The architecture prioritizes maintainability, testability, and scalability while following Laravel best practices and SOLID principles.
+
 ## Implemented Files
 
 ---
